@@ -2,32 +2,98 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Piano Alimentare</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     margin: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     overflow: hidden;
     background: black;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Contenitore per l'immagine */
+.image-container {
+    flex: 1 1 auto;
+    min-height: 0; /* evita che l'immagine spinga i bottoni fuori schermo su iOS */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 img {
-    width: 100vw;
-    height: 100vh;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
+}
+
+/* Barra con i 7 bottoni sotto l'immagine */
+.buttons-bar {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    background: #111;
+    gap: 4px;
+    z-index: 1;
+}
+
+.day-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 0;
+    background: #222;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Stile per il giorno attivo selezionato */
+.day-btn.active {
+    background: #007bff;
+    border-color: #0056b3;
 }
 </style>
 </head>
 
 <body>
 
-<img id="img">
+<div class="image-container">
+    <img id="img">
+</div>
+
+<!-- Barra dei 7 bottoni -->
+<div class="buttons-bar">
+    <button class="day-btn" onclick="selezionaGiorno(1)">Lun</button>
+    <button class="day-btn" onclick="selezionaGiorno(2)">Mar</button>
+    <button class="day-btn" onclick="selezionaGiorno(3)">Mer</button>
+    <button class="day-btn" onclick="selezionaGiorno(4)">Gio</button>
+    <button class="day-btn" onclick="selezionaGiorno(5)">Ven</button>
+    <button class="day-btn" onclick="selezionaGiorno(6)">Sab</button>
+    <button class="day-btn" onclick="selezionaGiorno(0)">Dom</button>
+</div>
 
 <script>
-
 const giorni = [
     "domenica.png",
     "lunedi.png",
@@ -41,13 +107,30 @@ const giorni = [
 let indice = new Date().getDay();
 
 const img = document.getElementById("img");
+const bottoni = document.querySelectorAll(".day-btn");
 
 function mostra() {
     img.src = giorni[indice];
+
+    // Aggiorna lo stato visivo dei bottoni
+    bottoni.forEach(btn => btn.classList.remove("active"));
+    
+    // Mappatura per attivare il bottone corrispondente all'indice
+    // (index 1 = Lun [0], 2 = Mar [1], ..., 0 = Dom [6])
+    let btnIndex = indice === 0 ? 6 : indice - 1;
+    if (bottoni[btnIndex]) {
+        bottoni[btnIndex].classList.add("active");
+    }
+}
+
+function selezionaGiorno(i) {
+    indice = i;
+    mostra();
 }
 
 mostra();
 
+// Gestione Swipe (Touch)
 let startX = 0;
 
 document.addEventListener("touchstart", e => {
@@ -55,19 +138,22 @@ document.addEventListener("touchstart", e => {
 });
 
 document.addEventListener("touchend", e => {
-
     let endX = e.changedTouches[0].clientX;
     let diff = startX - endX;
 
     if (Math.abs(diff) < 50) return;
 
-    // solo avanti
+    // Swipe Avanti
     if (diff > 0) {
         indice = (indice + 1) % 7;
         mostra();
+    } 
+    // Swipe Indietro (opzionale se si vuole scorrere anche all'indietro)
+    else {
+        indice = (indice - 1 + 7) % 7;
+        mostra();
     }
 });
-
 </script>
 
 </body>
